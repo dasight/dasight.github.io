@@ -223,7 +223,7 @@ We can use the following Pytorch code to implement it. And the shape of `ref_log
 ```
 def _compute_per_token_kl(ref_log_probs, policy_log_probs):
     x = ref_log_probs - policy_log_probs
-    per_token_kl = torch.exp(x_clip) - (x_clip) - 1
+    per_token_kl = torch.exp(x) - (x) - 1
     per_token_kl = torch.clip(per_token_kl, 0, 3)
     return per_token_kl
 ```
