@@ -30,17 +30,17 @@ twitter_username: cloudancer2011
 github_username:  dasight
 
 # markdown: kramdown
-# kramdown:
-#   input: GFM
-#   math_engine: mathjax
-#   math_engine_opts:
-#     preview: "none"
 
 # Build settings
 theme: minima
 markdown: kramdown
 plugins:
   - jekyll-feed
+kramdown:
+  input: GFM
+  math_engine: mathjax
+  math_engine_opts:
+    preview: "none"
 
 # Exclude from processing.
 # The following items will not be processed, by default.
