@@ -3,6 +3,7 @@ layout: post
 title:  "Handcrafting GRPO from Scratch"
 date:   2025-10-22 22:58:09 +0800
 categories: jekyll update
+usemathjax: true
 ---
 GRPO (Group Relative Policy Optimization) is a method used in reinforcement learning (RL)
 to help a model learn better by comparing different actions and making small, controlled 
@@ -111,7 +112,7 @@ class GRPOTrainer:
 
 ## Probability Ratio
 
-At the heart of GRPO is the probability ratio between the new policy and the old policy. In the following probability ratio formula below, $i$ represents the record number in a certain sampling group, and $t$ represents the step number (or the token index) during the generation, so that $o_{i,t}$ mens that the specific token (denoted as $o_{i,t}$) is observed at the *t*-th step of the *i*-th record in a certain group, while $\pi_{\theta}$ and $\pi_{\theta_{\text{old}}}$ represents the policy model and the old model, respectively.
+At the heart of GRPO is the probability ratio between the new policy and the old policy. In the following probability ratio formula below, $i$ represents the record number in a certain sampling group, and $t$ represents the step number (or the token index) during the generation, so that $o_{i,t}$ means that the specific token (denoted as $o_{i,t}$) is observed at the *t*-th step of the *i*-th record in a certain group, while $\pi_{\theta}$ and $\pi_{\theta_{\text{old}}}$ represents the policy model and the old model, respectively.
 
 $$
 r_{i,t} = \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} | q, o_{i,<t})}
