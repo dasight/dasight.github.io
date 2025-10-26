@@ -1,0 +1,15 @@
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],   // 行内公式
+    displayMath: [['$$', '$$'], ['\\[', '\\]']] // 行间公式
+  },
+  options: {
+    // 忽略这些标签中的内容（避免代码块被误处理）
+    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  }
+};
+</script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
