@@ -71,10 +71,19 @@ We can build the training data for GRPO from a public data set like [GSM8K](http
 
 # Loss Function
 
-Below is the loss function to optimize for GRPO, which looks to be a little scary. As a matter of fact, most of the efforts in handcrafting GRPO are to implement the loss function. As for the detailed explanation of the loss function, we will address in the respective sections that follow.
+Below is the loss function to optimize for GRPO. You may feel it a little scary, but most of the efforts in handcrafting GRPO are to implement the loss function. $L_{i,t}(\theta)$ here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. As for the detailed explanation of the loss function, we will address in the respective sections that follow.
 
 $$
-L_{i,t} = \min \left[
+\mathcal{J}_{\mathrm{GRPO}}(\theta) = 
+\mathbb{E}\!\left[q \sim P(Q), \{o_i\}_{i=1}^{G} \sim \pi_{\theta_{\text{old}}}(O|q)\right]
+\frac{1}{G} \sum_{i=1}^{G} \frac{1}{|o_i|} \sum_{t=1}^{|o_i|}
+\mathcal{J}_{i,t}(\theta)
+$$
+
+In which
+
+$$
+\mathcal{J}_{i,t}(\theta) = \min \left[
 \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} | q, o_{i,<t})}
 \hat{A}_{i,t},\;
 \mathrm{clip}\!\left(
@@ -87,16 +96,7 @@ L_{i,t} = \min \left[
 - \beta\, D_{\mathrm{KL}}\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]
 $$
 
-$$
-\mathcal{J}_{\mathrm{GRPO}}(\theta) = 
-\mathbb{E}\!\left[q \sim P(Q), \{o_i\}_{i=1}^{G} \sim \pi_{\theta_{\text{old}}}(O|q)\right]
-\frac{1}{G} \sum_{i=1}^{G} \frac{1}{|o_i|} \sum_{t=1}^{|o_i|}
-L_{i,t}
-$$
-
-To make life easier, I am going to split the function into 3 parts, implement them separately, then piece them together.
-
-The 3 parts are:
+To make life easier, I am going to split $\mathcal{J}_{i,t}(\theta)$ into the following 3 parts, implement them separately, then piece them together.
 
 - Probability Ratio: $\frac{\pi_{\theta}(o_{i,t} \| q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} \| q, o_{i,<t})}$
 - Advantages: $\hat{A}_{i,t}$
