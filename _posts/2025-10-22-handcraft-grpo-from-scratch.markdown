@@ -100,7 +100,7 @@ The 3 parts are:
 
 - Probability Ratio: $\frac{\pi_{\theta}(o_{i,t} \| q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} \| q, o_{i,<t})}$
 - Advantages: $\hat{A}_{i,t}$
-- KL Penalty: $D_{\mathrm{KL}}\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]$
+- KL Penalty: $D_{\mathrm{KL}}\\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]$
 
 The loss function is implemented in the `GRPOTrain` class. And below is the initialization of `GRPOTrain`.
 
