@@ -8,7 +8,7 @@ usemathjax: true
 
 # Introduction
 
-GRPO (Group Relative Policy Optimization) is a reinforcement learning (RL) method to fine-tune a large language model (LLM) by comparing different actions and making small, controlled updates using a group of observations. It’s like a smart way to learn from experience without making drastic changes that could mess things up.
+GRPO (Group Relative Policy Optimization) is the reinforcement learning (RL) method to fine-tune a large language model (LLM) by comparing different actions and making small, controlled updates using a group of observations. It’s like a smart way to learn from experience without making drastic changes that could mess things up.
 
 Handcrafting GRPO is especially useful for projects with strict constraints where off-the-shelf solutions cannot express required regularizers or safety checks, or the research explorations that require new reward functions or update rules. And we are also free to adapt and optimize it according to our own needs. At the same time, it is quite useful for those who wish to dive deeply into the underlying mechanisms of GRPO.
 
@@ -16,9 +16,11 @@ This post demonstrates how to handcraft GRPO from scratch rather than adapting a
 
 #### Modelling LLM Fine-tuning as Reinforcement Learning
 
-Both PPO and GRPO are reinforcement learning approaches. A common question about this approach is how we can link LLM fine-tuning with reinforcement learning.
+Both PPO and GRPO are reinforcement learning approaches, and a common question about this approach is how we can link LLM fine-tuning with reinforcement learning.
 
-The generation of each token can be viewed as an action performed by the LLM. And when the language model completes its generation (i.e. a sentence), a reward model or a set of rules is then used to evaluate whether the generated sentence is good or not, and assign a reward according to the evaluation result. At the end of each step, the model is updated according to the reward received.
+Briefly speaking, the generation of each token can be viewed as an *action* performed by the LLM. And when the language model completes its generation (i.e. a sentence), a reward model or a set of rules is used to evaluate whether the generated sentence is good or not, and assign a *reward* according to the evaluation result. At the end of each step, the model is updated according to the reward received.
+
+By introducing the *action* and *reward*, the LLM fine-tuning process can be modelled as the reinforcement learning training process, and employ the reinforcement learning algorithms to solve it.
 
 # Procedure of LLM Fine-Tuning with GRPO
 
