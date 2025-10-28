@@ -74,13 +74,13 @@ $$
 \mathcal{J}_{\mathrm{GRPO}}(\theta) = 
 \mathbb{E}\!\left[q \sim P(Q), \{o_i\}_{i=1}^{G} \sim \pi_{\theta_{\text{old}}}(O|q)\right]
 \frac{1}{G} \sum_{i=1}^{G} \frac{1}{|o_i|} \sum_{t=1}^{|o_i|}
-\mathcal{J}_{i,t}(\theta)
+J_{i,t}(\theta)
 $$
 
 where
 
 $$
-\mathcal{J}_{i,t}(\theta) = \min \left[
+J_{i,t}(\theta) = \min \left[
 \frac{\pi_{\theta}(o_{i,t} | q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} | q, o_{i,<t})}
 \hat{A}_{i,t},\;
 \mathrm{clip}\!\left(
@@ -95,7 +95,7 @@ $$
 
 The notion $J_{i,t}(\theta)$ represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss.
 
-To simplify the implementation, I am going to split $\mathcal{J}_{i,t}(\theta)$ into the following 3 parts, implement them separately, then piece them together.
+To simplify the implementation, I am going to split $J_{i,t}(\theta)$ into the following 3 parts, implement them separately, then piece them together.
 
 - Probability Ratio: $\frac{\pi_{\theta}(o_{i,t} \| q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} \| q, o_{i,<t})}$
 - Advantages: $\hat{A}_{i,t}$
