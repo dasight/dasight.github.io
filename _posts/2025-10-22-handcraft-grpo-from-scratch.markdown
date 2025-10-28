@@ -93,7 +93,7 @@ $$
 - \beta\, D_{\mathrm{KL}}\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]
 $$
 
-The notion $\mathcal{J}_{i,t}(\theta)$ represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss.
+The notion $J_{i,t}(\theta)$ represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss.
 
 To simplify the implementation, I am going to split $\mathcal{J}_{i,t}(\theta)$ into the following 3 parts, implement them separately, then piece them together.
 
@@ -231,7 +231,7 @@ def _compute_per_token_kl(ref_log_probs, policy_log_probs):
     return per_token_kl
 ```
 
-### KL Approximation and Clipping
+#### KL Approximation and Clipping
 
 Instead of computing the full KL divergence across the vocabulary, GRPO approximates the reverse KL term for each generated token, as shown in the Pytorch code above. As our purpose is only to prevent the trained policy from deviating too far from the reference model, such approximation is sufficiently accurate.
 
