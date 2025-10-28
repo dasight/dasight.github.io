@@ -13,12 +13,12 @@ to help a model learn better by comparing different actions and making small, co
 updates using a group of observations. It’s like a smart way to learn from experience without 
 making drastic changes that could mess things up.
 
-Handcrafting GRPO is especially useful to the projects with strict constraints where off-the-shelf 
+Handcrafting GRPO is especially useful for projects with strict constraints where off-the-shelf 
 solutions cannot express required regularizers or safety checks, or the research explorations that 
 require new reward functions or update rules. 
-And we are also free to use to do any adaption and optimization according to our own needs. At the same time, it is quite useful for those who wish to dive deeply into the underlying mechanisms of GRPO.
+And we are also free adapt and optimize it according to our own needs. At the same time, it is quite useful for those who wish to dive deeply into the underlying mechanisms of GRPO.
 
-We are going to handcraft GRPO from scratch rather than adapting an existing library or recipe.
+This post demonstrates how to handcraft GRPO from scratch rather than adapting an existing library or recipe.
 That means, we will code the dataset pipeline, loss functions, KL/regularization, clipping, etc.
 If you are also interested in looking inside GRPO, let's go together.
 
@@ -26,18 +26,18 @@ If you are also interested in looking inside GRPO, let's go together.
 
 Both PPO and GRPO are reinforcement learning approaches. A common question about this approach is how we can link LLM fine-tuning with reinforcement learning.
 
-For this question, we can think that the generation of a token can be regarded as an action performed by LLM. And when the language model completes its generation (i.e. a sentense), the reward model, or some rules will be used to evaluate whether the generated sentence is good or not, and grant the reward according to the evaluation result. At the end of the step, the model is updated according to the reward received.
+The generation of each token can be viewed as an action performed by the LLM. And when the language model completes its generation (i.e. a sentence), a reward model or a set of rules is then used to evaluate whether the generated sentence is good or not, and grant the reward according to the evaluation result. At the end of the step, the model is updated according to the reward received.
 
 # Procedure of LLM Fine-Tuning with GRPO
 
-When fine-tuning with GRPO, there are 3 models:
+When fine-tuning with GRPO, there are three models:
 
 * Policy model (or new model), denoted as `policy_model` in the program code, is the trainable model. It is the one we are fine-tuning with GRPO updates, and represents the current policy $\pi_{\theta}$.
 * Old model, denoted as `old_model`, is a frozen copy of the policy from the previous update step $\pi_{\theta_{\text{old}}}$. It’s used to compute the probability ratio.
 * Reference model, generally denoted as `ref_model`, is the original pretrained model (before any fine-tuning).
 It provides a stable distribution $\pi_{\text{ref}}$ against which we measure KL divergence.
 
-As these are all very large models, we often try to reduce the number of the models. In my program code below, I combine the policy model and old model into one, and sampling as policy model or old model at different times.
+Since these models are very large, we often try to reduce the number of active copies. In my program code below, I combine the policy model and old model into one, and sampling as policy model or old model at different times.
 
 The GRPO fine-tuning process is composed of the following steps:
 
@@ -51,32 +51,32 @@ The GRPO fine-tuning process is composed of the following steps:
 
 5. For each sampled `input_ids`, repeat Step 2 ~ 4 for several times, as specified by `mu`.
 
-6. Repeat the whole process (Step 1 ~ 5) for a few epoches (typically 1 or 2 epoches). One epoch means all of the records in the dataset are passwd once.
+6. Repeat the whole process (Step 1 ~ 5) for a few epochs (typically 1 or 2 epoches). One epoch means all of the records in the dataset are passed once.
 
-Based the steps explained above, we can see that the GRPO training process is primary composed of 2 parts:
+Based on the steps explained above, we can see that the GRPO training process is primarily composed of 2 parts:
 
 * Data curation, or sampling different answers from the question. In our code, it is the `GRPODataSet` class.
 * Training flow, which includes the implementation of the loss function. And in our code, it is the `GRPOTrain` class.
 
 ## Inner and Outer Loop during Fine-Tuning Procedure
 
-You may have noted that there are an inner loop (Step 5) and an outer loop (Step 6) during the GRPO fine-tuning. The inner training loop uses the same question and answer samples, and repeated by several times controlled by `mu`. The outer training loop, in the other hand, needs to resample the question and answer tokens every time.
+Note that there is an inner loop (Step 5) and an outer loop (Step 6) during the GRPO fine-tuning. The inner training loop uses the same question and answer samples, and repeated by several times controlled by `mu`. The outer training loop, on the other hand, resamples the question and answer tokens every time.
 
 Now, let's go through them one by one.
 
-# How the Training Set are Created for GRPO?
+# How the Training Set Is Created for GRPO?
 
-We can build the training set for GRPO from a public data set like [GSM8K](https://huggingface.co/datasets/openai/gsm8k), which contains grade school math problems. GSM8K itself is composed of a train set and a test set, and has at least 2 columns composed of questions and answers as the ground truths for the question.
+We can build the training set for GRPO from a public dataset like [GSM8K](https://huggingface.co/datasets/openai/gsm8k), which contains grade school math problems. GSM8K itself is composed of a train set and a test set, and has at least two columns containing questions and answers as the ground truths for the question.
 
 Briefly speaking, there are 2 primary steps in creating the training set for GRPO:
 
-1. First of all, sample a batch of records (4 or 8, as denoted by `B`) from the train set like [GSM8K](https://huggingface.co/datasets/openai/gsm8k). Each record is generally composed of a question field and an answer field.
+1. First of all, sample a batch of records (4 or 8, as denoted by `B`) from the train set like GSM8K. Each record is generally composed of a question field and an answer field.
 
 2. Then use the policy model to generate a batch of answers (4, 8, or 16, as denoted by `G`) for each question. In GRPO, we call the answers generated from the same question as a group of training data. At this time, we get a tensor of token IDs (`input_ids`) with the shape of `(B*G, L+prompt_len)`, which is `B` groups of training data.
 
 # Loss Function
 
-Below is the loss function to optimize for GRPO. You may feel it a little scary, but most of the efforts in handcrafting GRPO are to implement the loss function. $\mathcal{J}_{i,t}(\theta)$ here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. As for the detailed explanation of the loss function, we will address in the respective sections that follow.
+Below is the loss function to optimize for GRPO. It may seem intimidating at first, but most of the efforts in handcrafting GRPO are to implement the loss function. \\(\mathcal{J}_{i,t}(\theta)\\) here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. As for the detailed explanation of the loss function, we will address this in later sections.
 
 $$
 \mathcal{J}_{\mathrm{GRPO}}(\theta) = 
@@ -101,7 +101,7 @@ $$
 - \beta\, D_{\mathrm{KL}}\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]
 $$
 
-To make life easier, I am going to split $\mathcal{J}_{i,t}(\theta)$ into the following 3 parts, implement them separately, then piece them together.
+To simplify the implementation, I am going to split $\mathcal{J}_{i,t}(\theta)$ into the following 3 parts, implement them separately, then piece them together.
 
 - Probability Ratio: $\frac{\pi_{\theta}(o_{i,t} \| q, o_{i,<t})}{\pi_{\theta_{\text{old}}}(o_{i,t} \| q, o_{i,<t})}$
 - Advantages: $\hat{A}_{i,t}$
