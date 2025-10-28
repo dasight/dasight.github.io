@@ -8,7 +8,7 @@ usemathjax: true
 
 # Introduction
 
-GRPO (Group Relative Policy Optimization) is a reinforcement learning (RL) method to help a model learn better by comparing different actions and making small, controlled updates using a group of observations. It’s like a smart way to learn from experience without making drastic changes that could mess things up.
+GRPO (Group Relative Policy Optimization) is a reinforcement learning (RL) method to fine-tune a large language model (LLM) by comparing different actions and making small, controlled updates using a group of observations. It’s like a smart way to learn from experience without making drastic changes that could mess things up.
 
 Handcrafting GRPO is especially useful for projects with strict constraints where off-the-shelf solutions cannot express required regularizers or safety checks, or the research explorations that require new reward functions or update rules. And we are also free to adapt and optimize it according to our own needs. At the same time, it is quite useful for those who wish to dive deeply into the underlying mechanisms of GRPO.
 
@@ -325,6 +325,6 @@ for grpo_iter in range(config.mu):
 
 However, the training code above is the most basic version, and doesn't include any optimizations. For example, you might feel that your GPU memory is not enough to compute the batch as large as `B*G`. If so, just add gradient accumulation into the code.
 
-Here are the diagrams on the rewards, loss, and KL divergence during one of my GRPO training processes.
+Here are the diagrams on the rewards, loss, and KL divergence during one of my GRPO training processes using GSM8K.
 
 ![Handcraft GRPO](/assets/handcraft-grpo.jpg)
