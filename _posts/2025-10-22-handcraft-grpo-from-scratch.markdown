@@ -5,19 +5,22 @@ date:   2025-10-22 22:58:09 +0800
 categories: jekyll update
 usemathjax: true
 ---
-GRPO (Group Relative Policy Optimization) is a method used in reinforcement learning (RL)
+
+# Introduction
+
+GRPO (Group Relative Policy Optimization) is a method using reinforcement learning (RL)
 to help a model learn better by comparing different actions and making small, controlled 
 updates using a group of observations. It’s like a smart way to learn from experience without 
 making drastic changes that could mess things up.
 
 Handcrafting GRPO is especially useful to the projects with strict constraints where off-the-shelf 
 solutions cannot express required regularizers or safety checks, or the research explorations that 
-require new reward functions or update rules. It is also useful for those who wish to dive deeply
-into the underlying mechanisms of GRPO.
+require new reward functions or update rules. 
+And we are also free to use to do any adaption and optimization according to our own needs. At the same time, it is quite useful for those who wish to dive deeply into the underlying mechanisms of GRPO.
 
 We are going to handcraft GRPO from scratch rather than adapting an existing library or recipe.
 That means, we will code the dataset pipeline, loss functions, KL/regularization, clipping, etc.
-So you are interested in looking into the inside of GRPO, this blog is right for you.
+If you are also interested in looking inside GRPO, let's go together.
 
 ## Modelling LLM Fine-tuning as Reinforcement Learning
 
@@ -36,13 +39,13 @@ It provides a stable distribution $\pi_{\text{ref}}$ against which we measure KL
 
 As these are all very large models, we often try to reduce the number of the models. In my program code below, I combine the policy model and old model into one, and sampling as policy model or old model at different times.
 
-The fine-tuning process of GRPO is composed of the following steps:
+The GRPO fine-tuning process is composed of the following steps:
 
-1. First of all, sample a batch of records (4 or 8, as denoted by `B`) from the train set like [GSM8K](https://huggingface.co/datasets/openai/gsm8k). Each record is generally composed of a question field and an answer field.
+1. We will firstly sample serveral questions (with the number of questions denoted as `B`). And for each question, we also use the policy model to generate several answers (denoted as `G`). The final sampling results will be the `input_ids` tensor with the shape like `(B*G, L+prompt_len)`, in which `L` represents the maximum length of the generated answering tokens, and `prompt_len` represents the maximum length of the question tokens.
 
-2. Then use the policy model to generate a batch of answers (4, 8, or 16, as denoted by `G`) for each question. At this time, we get a tensor of token IDs (denoted as `input_ids`) with the shape of `(B*G, L+prompt_len)`, in which `L` is the maximum length the answer sequences, and prompt_len is the maximum length of the question sequences.
+2. Execute the forward step with the policy model and `input_ids`, so as to compute the probability that each token in `input_ids` will be generated.
 
-3. Calculate the loss function using `input_ids`.
+3. Calculate the loss function using the probability values for the tokens in `input_ids`, not only from the policy model in Step 2, but also from the reference model and the old models.
 
 4. Update the policy model parameter with `loss.backward()` and `optimizer.step()`.
 
@@ -61,17 +64,19 @@ You may have noted that there are an inner loop (Step 5) and an outer loop (Step
 
 Now, let's go through them one by one.
 
-# How the Training Data are Created?
+# How the Training Set are Created for GRPO?
 
-We can build the training data for GRPO from a public data set like [GSM8K](https://huggingface.co/datasets/openai/gsm8k).
+We can build the training set for GRPO from a public data set like [GSM8K](https://huggingface.co/datasets/openai/gsm8k), which contains grade school math problems. GSM8K itself is composed of a train set and a test set, and has at least 2 columns composed of questions and answers as the ground truths for the question.
 
-## Should we use the ground truth during the training?
+Briefly speaking, there are 2 primary steps in creating the training set for GRPO:
 
+1. First of all, sample a batch of records (4 or 8, as denoted by `B`) from the train set like [GSM8K](https://huggingface.co/datasets/openai/gsm8k). Each record is generally composed of a question field and an answer field.
 
+2. Then use the policy model to generate a batch of answers (4, 8, or 16, as denoted by `G`) for each question. In GRPO, we call the answers generated from the same question as a group of training data. At this time, we get a tensor of token IDs (`input_ids`) with the shape of `(B*G, L+prompt_len)`, which is `B` groups of training data.
 
 # Loss Function
 
-Below is the loss function to optimize for GRPO. You may feel it a little scary, but most of the efforts in handcrafting GRPO are to implement the loss function. $L_{i,t}(\theta)$ here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. As for the detailed explanation of the loss function, we will address in the respective sections that follow.
+Below is the loss function to optimize for GRPO. You may feel it a little scary, but most of the efforts in handcrafting GRPO are to implement the loss function. $\mathcal{J}_{i,t}(\theta)$ here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. As for the detailed explanation of the loss function, we will address in the respective sections that follow.
 
 $$
 \mathcal{J}_{\mathrm{GRPO}}(\theta) = 
