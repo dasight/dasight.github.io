@@ -64,7 +64,9 @@ Briefly speaking, there are 2 primary steps in creating the training set for GRP
 
 1. First of all, sample a batch of records (4 or 8, as denoted by `B`) from the train set like GSM8K. Each record is generally composed of a question field and an answer field.
 
-2. Then use the policy model to generate a batch of answers (4, 8, or 16, as denoted by `G`) for each question. In GRPO, we call the answers generated from the same question as a group of training data. At this time, we get a tensor of token IDs (`input_ids`) with the shape of `(B*G, L+prompt_len)`, which is `B` groups of training data.
+2. Then use the policy model to generate a batch of answers (4, 8, or 16, as denoted by `G`) for each question. In GRPO, we call the answers generated from the same question as a group of training data.
+
+Note that at the end of the batch sampling, we will get a tensor of token IDs (`input_ids`) with the shape of `(B*G, L+prompt_len)`, which is `B` groups of training data.
 
 # Loss Function
 
@@ -214,7 +216,7 @@ D_{\mathrm{KL}}\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right] = x - \log 
 - 1
 $$
 
-In which
+where
 
 $$
 x = \frac{\pi_{\mathrm{ref}}(o_{i,t} \mid q, o_{i,<t})}
@@ -322,3 +324,7 @@ for grpo_iter in range(config.mu):
 ```
 
 However, the training code above is the most basic version, and doesn't include any optimizations. For example, you might feel that your GPU memory is not enough to compute the batch as large as `B*G`. If so, just add gradient accumulation into the code.
+
+Here are the diagrams on the rewards, loss, and KL divergence during one of my GRPO training processes.
+
+![Handcraft GRPO](/assets/handcraft-grpo.jpg)
