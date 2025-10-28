@@ -130,7 +130,7 @@ As this is the most important formula in handcrafted GRPO training, let's gain a
 * Question: Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?
 * Answer ($o_3$): Natalia sold 48/2 = 24 clips in May ...
 
-Thus, we can observe the tokens of $o_{3,t}$ for different *t* like the following:
+Thus, we can observe the tokens of $o_{3,t}$ at different generation steps (*t*) like the following:
 
 * $o_{3,0}\Rightarrow$ *Natalia*
 * $o_{3,1}\Rightarrow$ *sold*
