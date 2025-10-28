@@ -14,7 +14,7 @@ Handcrafting GRPO is especially useful for projects with strict constraints wher
 
 This post demonstrates how to handcraft GRPO from scratch rather than adapting an existing library or recipe. That means, we will code the dataset pipeline, loss functions, KL/regularization, clipping, etc. If you are also interested in looking inside GRPO, let's dive in.
 
-## Modelling LLM Fine-tuning as Reinforcement Learning
+#### Modelling LLM Fine-tuning as Reinforcement Learning
 
 Both PPO and GRPO are reinforcement learning approaches. A common question about this approach is how we can link LLM fine-tuning with reinforcement learning.
 
@@ -50,7 +50,7 @@ Based on the steps explained above, we can see that the GRPO training process is
 * Data curation, or sampling different answers from the question. In our code, it is the `GRPODataSet` class.
 * Training flow, which includes the implementation of the loss function. In the code, that's the `GRPOTrainer` class.
 
-## Inner and Outer Loop during Fine-Tuning Procedure
+#### Inner and Outer Loop during Fine-Tuning Procedure
 
 Note that there is an inner loop (Step 5) and an outer loop (Step 6) during the GRPO fine-tuning. The inner training loop uses the same question and answer samples, and is repeated by several times controlled by `mu`. The outer training loop, on the other hand, resamples the question and answer tokens every time.
 
