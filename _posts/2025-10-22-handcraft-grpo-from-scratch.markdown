@@ -48,7 +48,7 @@ The GRPO fine-tuning process is composed of the following steps:
 Based on the steps explained above, we can see that the GRPO training process is primarily composed of two parts:
 
 * Data curation, or sampling different answers from the question. In our code, it is the `GRPODataSet` class.
-* Training flow, which includes the implementation of the loss function. In the code, that's the `GRPOTrain` class.
+* Training flow, which includes the implementation of the loss function. In the code, that's the `GRPOTrainer` class.
 
 ## Inner and Outer Loop during Fine-Tuning Procedure
 
@@ -68,7 +68,9 @@ Briefly speaking, there are 2 primary steps in creating the training set for GRP
 
 # Loss Function
 
-Below is the loss function to optimize for GRPO. It may seem intimidating at first, but most of the effort in handcrafting GRPO is implementing the loss function. $\mathcal{J}_{i,t}(\theta)$ here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. The detailed explanation of the loss function will be addressed below.
+Below is the reward function to optimize for GRPO, and the loss function is simply the minus of it. It may seem intimidating at the first sight, but we will see  that most of the effort in handcrafting GRPO is actually implementing the loss function.
+
+$\mathcal{J}_{i,t}(\theta)$ here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. The detailed explanation of the loss function will be addressed below.
 
 $$
 \mathcal{J}_{\mathrm{GRPO}}(\theta) = 
@@ -77,7 +79,7 @@ $$
 \mathcal{J}_{i,t}(\theta)
 $$
 
-In which
+where
 
 $$
 \mathcal{J}_{i,t}(\theta) = \min \left[
@@ -99,7 +101,7 @@ To simplify the implementation, I am going to split $\mathcal{J}_{i,t}(\theta)$ 
 - Advantages: $\hat{A}_{i,t}$
 - KL Penalty: $D_{\mathrm{KL}}\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]$
 
-The loss function is implemented in the `GRPOTrain` class. And below is the initialization of `GRPOTrain`.
+The loss function is implemented in the `GRPOTrainer` class. And below is the initialization of `GRPOTrainer`.
 
 ```
 class GRPOTrainer:    
