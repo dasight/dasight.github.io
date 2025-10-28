@@ -70,8 +70,6 @@ Briefly speaking, there are 2 primary steps in creating the training set for GRP
 
 Below is the reward function to optimize for GRPO, and the loss function is simply the minus of it. It may seem intimidating at the first sight, but we will see  that most of the effort in handcrafting GRPO is actually implementing the loss function.
 
-$\mathcal{J}_{i,t}(\theta)$ here represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss. The detailed explanation of the loss function will be addressed below.
-
 $$
 \mathcal{J}_{\mathrm{GRPO}}(\theta) = 
 \mathbb{E}\!\left[q \sim P(Q), \{o_i\}_{i=1}^{G} \sim \pi_{\theta_{\text{old}}}(O|q)\right]
@@ -94,6 +92,8 @@ $$
 \right]
 - \beta\, D_{\mathrm{KL}}\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]
 $$
+
+The notion $\mathcal{J}_{i,t}(\theta)$ represents the per-token loss of the *t*-th generated token of the *i*-th answering sequence, while $\mathcal{J}_{\mathrm{GRPO}}(\theta)$ is the expected value of the averaged per-token loss.
 
 To simplify the implementation, I am going to split $\mathcal{J}_{i,t}(\theta)$ into the following 3 parts, implement them separately, then piece them together.
 
