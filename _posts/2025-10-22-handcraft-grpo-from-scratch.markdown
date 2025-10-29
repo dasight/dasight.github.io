@@ -8,7 +8,7 @@ usemathjax: true
 
 # Introduction
 
-GRPO (Group Relative Policy Optimization) is the reinforcement learning (RL) method to fine-tune a large language model (LLM) by comparing different actions and making small, controlled updates using a group of observations. It’s like a smart way to learn from experience without making drastic changes that could mess things up.
+GRPO (Group Relative Policy Optimization) is the reinforcement learning (RL) method to fine-tune or align a large language model (LLM) by comparing different actions and making small, controlled updates using a group of observations. It’s like a smart way to learn from experience without making drastic changes that could mess things up.
 
 Handcrafting GRPO is especially useful for projects with strict constraints where off-the-shelf solutions cannot express required regularizers or safety checks, or the research explorations that require new reward functions or update rules. And we are also free to adapt and optimize it according to our own needs. At the same time, it is quite useful for those who wish to dive deeply into the underlying mechanisms of GRPO.
 
@@ -245,7 +245,7 @@ However, during the training, we see some spikes for the $D_{\mathrm{KL}}$ value
 torch.nn.utils.clip_grad_norm_(policy_model.parameters(), 1.0)
 ```
 
-## Put Everything Together
+## Put Loss Function Together
 
 Having all of the code snippets above, we can now define the function to compute the loss as follows.
 
@@ -305,7 +305,7 @@ with torch.no_grad():
 
 Note that the computation of `old_log_prob` and `ref_log_prob` are during the outer loop. That's true. Because they are used as the baseline to compute the probability ratio and the KL Penalties with `policy_log_prob`.
 
-Finally, we enter the inner loop, and optimize the policy model. This loop is quite standard for Pytorch, but make sure to put `torch.nn.utils.clip_grad_norm_()` into the loop, especially we are using $D_{\mathrm{KL}}\!\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]$ as a KL approximation.
+Finally, we enter the inner loop, and optimize the policy model. This loop is quite standard for Pytorch, but make sure to put `torch.nn.utils.clip_grad_norm_()` into the loop, especially we are using $D_{\mathrm{KL}}\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]$ as a KL approximation.
 
 ```
 policy_model.train()
