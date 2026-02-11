@@ -147,7 +147,7 @@ Suppose the policy model generates *May* with a probability of 0.8, while the ol
 
 We can see from the narration above that the probability ratio $r_{i,t}$ is computed on a per-token basis. So we often call it per-token probability ratio.
 
-The following Pytorch code can be used to compute the probability ratio, in which `input_ids` represents the token IDs of the questions as well as the generated answers, while `L` represents the net answer token length, excluding the question tokens.
+The following PyTorch code can be used to compute the probability ratio, in which `input_ids` represents the token IDs of the questions as well as the generated answers, while `L` represents the net answer token length, excluding the question tokens.
 
 ```
 def _compute_log_probs(model, input_ids, L):
@@ -189,7 +189,7 @@ $$
 A_i = \frac{r_i - \mu_G}{\sigma_G}
 $$
 
-Below is the Pytorch code to compute the advantages out of the rewards. As the tensor shape like (B, G) is only required when computing group-wise `mean` and `std`, the tensor is reshaped back to 1-D after the computation.
+Below is the PyTorch code to compute the advantages out of the rewards. As the tensor shape like (B, G) is only required when computing group-wise `mean` and `std`, the tensor is reshaped back to 1-D after the computation.
 
 ```
 def _compute_rewards_and_advantages(self, txt_o, answer):
@@ -225,7 +225,7 @@ x = \frac{\pi_{\mathrm{ref}}(o_{i,t} \mid q, o_{i,<t})}
 {\pi_\theta(o_{i,t} \mid q, o_{i,<t})}
 $$
 
-We can use the following Pytorch code to implement it. And the shape of `ref_log_probs` and `policy_log_probs` are both like (B*G, L).
+We can use the following PyTorch code to implement it. And the shape of `ref_log_probs` and `policy_log_probs` are both like (B*G, L).
 
 ```
 def _compute_per_token_kl(ref_log_probs, policy_log_probs):
@@ -237,9 +237,9 @@ def _compute_per_token_kl(ref_log_probs, policy_log_probs):
 
 #### KL Approximation and Clipping
 
-Instead of computing the full KL divergence across the vocabulary, GRPO approximates the reverse KL term for each generated token, as shown in the Pytorch code above. As our purpose is only to prevent the trained policy from deviating too far from the reference model, such approximation is sufficiently accurate.
+Instead of computing the full KL divergence across the vocabulary, GRPO approximates the reverse KL term for each generated token, as shown in the PyTorch code above. As our purpose is only to prevent the trained policy from deviating too far from the reference model, such approximation is sufficiently accurate.
 
-However, during the training, we see some spikes for the $D_{\mathrm{KL}}$ values, which further lead to spikes in the loss function and potential reward collapse. A common approach to deal with the spikes in the loss function is to clip the gradient with the following Pytorch function.
+However, during the training, we see some spikes for the $D_{\mathrm{KL}}$ values, which further lead to spikes in the loss function and potential reward collapse. A common approach to deal with the spikes in the loss function is to clip the gradient with the following PyTorch function.
 
 ```
 torch.nn.utils.clip_grad_norm_(policy_model.parameters(), 1.0)
@@ -270,7 +270,7 @@ The code is straightforward. And the only confusing thing might be the `completi
 
 # Training Flow
 
-We have presented the high-level procedure of GRPO-based model fine-tuning in the section of *Procedure of LLM Fine-Tuning with GRPO*, which is quite similar to the general Pytorch model training approach. Now let's implement it in Pytorch.
+We have presented the high-level procedure of GRPO-based model fine-tuning in the section of *Procedure of LLM Fine-Tuning with GRPO*, which is quite similar to the general PyTorch model training approach. Now let's implement it in PyTorch.
 
 First of all, define an optimizer like the following:
 
@@ -305,7 +305,7 @@ with torch.no_grad():
 
 Note that the computation of `old_log_prob` and `ref_log_prob` are during the outer loop. That's true. Because they are used as the baseline to compute the probability ratio and the KL Penalties with `policy_log_prob`.
 
-Finally, we enter the inner loop, and optimize the policy model. This loop is quite standard for Pytorch, but make sure to put `torch.nn.utils.clip_grad_norm_()` into the loop, especially we are using $D_{\mathrm{KL}}\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]$ as a KL approximation.
+Finally, we enter the inner loop, and optimize the policy model. This loop is quite standard for PyTorch, but make sure to put `torch.nn.utils.clip_grad_norm_()` into the loop, especially we are using $D_{\mathrm{KL}}\left[\pi_{\theta} \,\|\, \pi_{\mathrm{ref}}\right]$ as a KL approximation.
 
 ```
 policy_model.train()
@@ -329,4 +329,4 @@ However, the training code above is the most basic version, and doesn't include 
 
 Here are the diagrams on the rewards, loss, and KL divergence during one of my GRPO training processes using GSM8K.
 
-![Handcraft GRPO](/assets/handcraft-grpo.jpg)
+![Handcraft GRPO](/assets/2025-10-22-handcraft-grpo.jpg)
